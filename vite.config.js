@@ -5,7 +5,7 @@ import FullReload from 'vite-plugin-full-reload';
 
 export default defineConfig(({ command }) => {
   return {
-    base: command === 'build' ? '/goit-js-hw-11/' : '/',
+    base: command === 'build' ? '/goit-js-hw-12/' : '/',
     define: {
       global: {},
     },
