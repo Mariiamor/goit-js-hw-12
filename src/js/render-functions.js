@@ -1,20 +1,19 @@
 import SimpleLightbox from 'simplelightbox';
 import 'simplelightbox/dist/simple-lightbox.min.css';
-import '../css/custom.css';
 import iziToast from 'izitoast';
 import 'izitoast/dist/css/iziToast.min.css';
-import '../css/iziToast.css';
 import iconNoResults from '../img/icon-no-results.svg';
 
 const gallery = document.querySelector('.gallery');
 const loader = document.querySelector('.loader-box');
+const loadMoreButton = document.querySelector('.load-more'); 
 
 let lightbox = new SimpleLightbox('.gallery a', {
   captionsData: 'alt',
   captionDelay: 250,
 });
 
-export function renderImages(images) {
+export function createGallery(images) {
   const galleryHtml = images
     .map(
       ({
@@ -35,7 +34,6 @@ export function renderImages(images) {
                   data-source="${largeImageURL}"
                   alt="${tags}"
                 />
-
                 <figcaption class="thumb-data">
                   <dl class="thumb-data-list">
                     <div class="thumb-data-item">
@@ -58,18 +56,16 @@ export function renderImages(images) {
                 </figcaption>
               </figure>
             </a>
-          </li>
-        `
+          </li>`
     )
     .join('');
 
-  gallery.innerHTML = galleryHtml;
+  gallery.insertAdjacentHTML('beforeend', galleryHtml); 
   lightbox.refresh();
-  hideLoader();
 }
 
 export function clearGallery() {
-  gallery.innerHTML = '';
+  gallery.innerHTML = '';  
 }
 
 export function showLoader() {
@@ -80,6 +76,14 @@ export function showLoader() {
 export function hideLoader() {
   gallery.classList.remove('hidden');
   loader.classList.add('hidden');
+}
+
+export function showLoadMoreButton() {
+  loadMoreButton.classList.remove('hidden');
+}
+
+export function hideLoadMoreButton() {
+  loadMoreButton.classList.add('hidden');
 }
 
 export function showMessage() {
