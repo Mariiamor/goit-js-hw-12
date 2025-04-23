@@ -9,15 +9,23 @@ import {
   showMessage,
 } from './js/render-functions';
 
+import iziToast from 'izitoast';
+import 'izitoast/dist/css/iziToast.min.css';
+
 const form = document.querySelector('form');
 const input = document.querySelector('#search-text');
+const loadMoreBtn = document.querySelector('.load-more');
+
 let query = '';
-let page = 1;  
+let page = 1;
 let totalHits = 0;
+const perPage = 40;
 
 form.addEventListener('submit', async (e) => {
   e.preventDefault();
   query = input.value.trim();
+  page = 1;
+  totalHits = 0;
 
   if (!query) {
     iziToast.error({
@@ -28,55 +36,74 @@ form.addEventListener('submit', async (e) => {
     return;
   }
 
-  page = 1;  
-  clearGallery();  
-  showLoader();  
+  clearGallery();
+  hideLoadMoreButton();
+  showLoader();
+
   try {
     const data = await getImagesByQuery(query, page);
     totalHits = data.totalHits;
 
     if (data.hits.length === 0) {
-      showMessage();  
-    } else {
-      createGallery(data.hits);  
-      showLoadMoreButton(); 
+      showMessage();
+      return;
+    }
+
+    createGallery(data.hits);
+
+    const totalPages = Math.ceil(totalHits / perPage);
+    if (page < totalPages) {
+      showLoadMoreButton();
     }
   } catch (error) {
-    console.error(error);
+    handleFetchError(error);
   } finally {
     hideLoader();
   }
 });
 
-document.querySelector('.load-more').addEventListener('click', async () => {
-  page += 1;  
+loadMoreBtn.addEventListener('click', async () => {
+  page += 1;
   showLoader();
 
   try {
     const data = await getImagesByQuery(query, page);
+    createGallery(data.hits);
+    smoothScroll();
 
-    if (data.hits.length === 0) {
+    const totalPages = Math.ceil(totalHits / perPage);
+    if (page >= totalPages) {
       hideLoadMoreButton();
       iziToast.info({
         title: 'End of Results',
         message: "We're sorry, but you've reached the end of search results.",
         position: 'topRight',
       });
-    } else {
-      createGallery(data.hits);
-      smoothScroll();  
     }
   } catch (error) {
-    console.error(error);
+    handleFetchError(error);
   } finally {
     hideLoader();
   }
 });
 
 function smoothScroll() {
-  const cardHeight = document.querySelector('.gallery-item').getBoundingClientRect().height;
-  window.scrollBy({
-    top: cardHeight * 2,  
-    behavior: 'smooth',
+  const firstCard = document.querySelector('.gallery-item');
+  if (firstCard) {
+    const cardHeight = firstCard.getBoundingClientRect().height;
+    window.scrollBy({
+      top: cardHeight * 2,
+      behavior: 'smooth',
+    });
+  }
+}
+
+function handleFetchError(error) {
+  console.error('Fetch error:', error);
+  hideLoadMoreButton();
+  iziToast.error({
+    title: 'Error',
+    message: 'Something went wrong. Please try again later.',
+    position: 'topRight',
   });
 }
